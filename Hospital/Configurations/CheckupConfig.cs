@@ -23,10 +23,11 @@ namespace Hospital.Configurations
             builder.HasOne(c => c.Patient)
                 .WithMany(p => p.Checkups)
                 .HasForeignKey(c => c.PatientId);
-
+            
             builder.HasMany(c => c.Prescriptions)
                 .WithOne(p => p.Checkup)
-                .HasForeignKey(p => p.CheckupId);
+                .HasForeignKey(p => p.CheckupId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 

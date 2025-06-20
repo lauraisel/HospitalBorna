@@ -33,11 +33,13 @@ namespace Hospital.Configurations
 
             builder.HasMany(p => p.MedicalRecords)
                 .WithOne(mr => mr.Patient)
-                .HasForeignKey(mr => mr.PatientId);
+                .HasForeignKey(mr => mr.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(p => p.Checkups)
                 .WithOne(c => c.Patient)
-                .HasForeignKey(c => c.PatientId);
+                .HasForeignKey(c => c.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 

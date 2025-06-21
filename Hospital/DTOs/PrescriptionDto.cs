@@ -14,4 +14,10 @@
         public string Dosage { get; set; }
         public int CheckupId { get; set; }
     }
+
+    public class UpdatePrescriptionDto
+    {
+        public string Medication { get; set; }
+        public string Dosage { get; set; }
+    }
 }

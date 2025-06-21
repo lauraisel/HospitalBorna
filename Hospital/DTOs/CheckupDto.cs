@@ -18,4 +18,11 @@ namespace Hospital.DTOs
         public string? ImagePath { get; set; }
         public int PatientId { get; set; }
     }
+
+    public class UpdateCheckupDto
+    {
+        public DateTime CheckupTime { get; set; }
+        public CheckupProcedure Procedure { get; set; }
+        public string? ImagePath { get; set; }
+    }
 }

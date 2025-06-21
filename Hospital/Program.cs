@@ -1,4 +1,5 @@
 using Hospital;
+using Hospital.Extensions;
 using Hospital.Mapping;
 using Hospital.Repositories;
 using Hospital.Services.Implementations;
@@ -20,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
         .UseLazyLoadingProxies());
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddAllValidators();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();

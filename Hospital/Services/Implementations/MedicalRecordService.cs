@@ -1,6 +1,12 @@
-﻿using Hospital.Models;
+﻿using CsvHelper;
+using Hospital.DTOs;
+using Hospital.Models;
 using Hospital.Repositories;
 using Hospital.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Formats.Asn1;
+using System.Globalization;
 
 namespace Hospital.Services.Implementations
 {
@@ -37,6 +43,39 @@ namespace Hospital.Services.Implementations
         {
             var records = await _medicalRecordRepository.GetAllAsync();
             return records.Where(p => p.PatientId == patientId);
+        }
+
+        public async Task<FileStreamResult> GetMedicalRecordsCsvAsync(int patientId)
+        {
+            var records = await _medicalRecordRepository.GetAll()
+                .Where(r => r.PatientId == patientId)
+                .Include(r => r.Patient)
+                .Select(r => new MedicalRecordExportRow
+                {
+                    PatientId = r.PatientId,
+                    FullName = r.Patient.Name + " " + r.Patient.Surname,
+                    Sex = r.Patient.Sex.ToString(),
+                    DateOfBirth = r.Patient.DateOfBirth.ToString("yyyy-MM-dd"),
+                    DiseaseName = r.DiseaseName,
+                    StartDate = r.StartDate.ToString("yyyy-MM-dd"),
+                    EndDate = r.EndDate != null ? r.EndDate.Value.ToString("yyyy-MM-dd") : ""
+                })
+                .ToListAsync();
+
+            var memoryStream = new MemoryStream();
+            using (var writer = new StreamWriter(memoryStream, leaveOpen: true))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                await csv.WriteRecordsAsync(records);
+                await writer.FlushAsync();
+            }
+
+            memoryStream.Position = 0;
+            var fileName = $"medical_records_patient_{patientId}.csv";
+            return new FileStreamResult(memoryStream, "text/csv")
+            {
+                FileDownloadName = fileName
+            };
         }
 
         public async Task UpdateAsync(MedicalRecord record)

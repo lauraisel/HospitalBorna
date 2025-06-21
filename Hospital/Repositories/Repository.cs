@@ -12,6 +12,10 @@ namespace Hospital.Repositories
             _context = context;
             _dbSet = context.Set<T>();
         }
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet.AsQueryable();
+        }
 
         public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
         public async Task<T?> GetAsync(int id) => await _dbSet.FindAsync(id);

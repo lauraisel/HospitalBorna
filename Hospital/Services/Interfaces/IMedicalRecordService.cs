@@ -1,4 +1,5 @@
 ﻿using Hospital.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hospital.Services.Interfaces
 {
@@ -9,5 +10,6 @@ namespace Hospital.Services.Interfaces
         Task AddAsync(MedicalRecord record);
         Task UpdateAsync(MedicalRecord record);
         Task DeleteAsync(int id);
+        Task<FileStreamResult> GetMedicalRecordsCsvAsync(int patientId);
     }
 }

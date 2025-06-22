@@ -20,15 +20,23 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         .UseLazyLoadingProxies());
 
+builder.Services.AddLazyResolution();
+
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddAllValidators();
 
+
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<RepositoryFactory>();
+
 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<ICheckupService, CheckupService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
+
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
+
 
 var app = builder.Build();
 

@@ -23,6 +23,10 @@ namespace Hospital.Mapping
             CreateMap<Prescription, PrescriptionDto>();
             CreateMap<CreatePrescriptionDto, Prescription>();
             CreateMap<UpdatePrescriptionDto, Prescription>();
+
+            CreateMap<CheckupImage, CheckupImageDto>();
+            CreateMap<CreateCheckupImageDto, CheckupImage>()
+                .ForMember(dest => dest.FileName, opt => opt.Ignore());
         }
     }
 }

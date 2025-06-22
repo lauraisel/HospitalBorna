@@ -11,6 +11,7 @@ namespace Hospital
         public DbSet<MedicalRecord> MedicalRecords => Set<MedicalRecord>();
         public DbSet<Checkup> Checkups => Set<Checkup>();
         public DbSet<Prescription> Prescriptions => Set<Prescription>();
+        public DbSet<CheckupImage> CheckupImages => Set<CheckupImage>();
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -23,6 +24,7 @@ namespace Hospital
             modelBuilder.ApplyConfiguration(new MedicalRecordConfig());
             modelBuilder.ApplyConfiguration(new CheckupConfig());
             modelBuilder.ApplyConfiguration(new PrescriptionConfig());
+            modelBuilder.ApplyConfiguration(new CheckupImageConfig());
         }
     }
 }

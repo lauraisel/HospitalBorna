@@ -10,7 +10,7 @@ namespace Hospital.Mapping
         {
             CreateMap<Patient, PatientDto>();
             CreateMap<CreatePatientDto, Patient>();
-            CreateMap<UpdatePatientDto, PatientDto>();
+            CreateMap<UpdatePatientDto, Patient>();
 
             CreateMap<Checkup, CheckupDto>();
             CreateMap<CreateCheckupDto, Checkup>();

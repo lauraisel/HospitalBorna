@@ -6,6 +6,7 @@ using Hospital.Services.Implementations;
 using Hospital.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,8 @@ builder.Services.AddLazyResolution();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddAllValidators();
+builder.Services.AddFluentValidationAutoValidation();
+
 
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

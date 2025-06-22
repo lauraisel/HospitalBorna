@@ -17,14 +17,16 @@ namespace Hospital.Configurations
                 .IsRequired()
                 .HasConversion<string>(); 
 
-            builder.Property(c => c.ImagePath)
-                .HasMaxLength(255);
-
             builder.HasOne(c => c.Patient)
                 .WithMany(p => p.Checkups)
                 .HasForeignKey(c => c.PatientId);
             
             builder.HasMany(c => c.Prescriptions)
+                .WithOne(p => p.Checkup)
+                .HasForeignKey(p => p.CheckupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(c => c.CheckupImages)
                 .WithOne(p => p.Checkup)
                 .HasForeignKey(p => p.CheckupId)
                 .OnDelete(DeleteBehavior.Cascade);

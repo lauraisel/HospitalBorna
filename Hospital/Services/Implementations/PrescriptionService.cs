@@ -1,49 +1,77 @@
-﻿using Hospital.Models;
+﻿using AutoMapper;
+using Hospital.DTOs;
+using Hospital.Models;
 using Hospital.Repositories;
 using Hospital.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hospital.Services.Implementations
 {
     public class PrescriptionService : IPrescriptionService
     {
-        private readonly IRepository<Prescription> _prescriptionRepository;
+        private readonly RepositoryFactory _factory;
+        private IRepository<Prescription>? _prescriptionRepository;
+        private readonly IMapper _mapper;
 
-        public PrescriptionService(RepositoryFactory factory)
+        private IRepository<Prescription> PrescriptionRepository =>
+        _prescriptionRepository ??= _factory.CreateRepository<Prescription>();
+
+        public PrescriptionService(RepositoryFactory factory, IMapper mapper)
         {
-            _prescriptionRepository = factory.CreateRepository<Prescription>();
+            _factory = factory;
+            _mapper = mapper;
         }
 
-        public async Task AddAsync(Prescription prescription)
+        public async Task<IEnumerable<PrescriptionDto>> GetAllAsync()
         {
-            await _prescriptionRepository.AddAsync(prescription);
-            await _prescriptionRepository.SaveAsync();
+            var prescriptions = await PrescriptionRepository.GetAll().ToListAsync();
+            return _mapper.Map<IEnumerable<PrescriptionDto>>(prescriptions);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<PrescriptionDto?> GetByIdAsync(int id)
         {
-            var prescription = await _prescriptionRepository.GetAsync(id);
-            if (prescription != null)
-            {
-                _prescriptionRepository.Delete(prescription);
-                await _prescriptionRepository.SaveAsync();
-            }
+            var prescription = await PrescriptionRepository.GetAsync(id);
+            return prescription == null ? null : _mapper.Map<PrescriptionDto>(prescription);
         }
 
-        public async Task<IEnumerable<Prescription>> GetByCheckupIdAsync(int checkupId)
+        public async Task<PrescriptionDto> CreatePrescriptionAsync(CreatePrescriptionDto createDto)
         {
-            var perscriptions = await _prescriptionRepository.GetAllAsync();
-            return perscriptions.Where(c => c.CheckupId == checkupId);
+            var prescription = _mapper.Map<Prescription>(createDto);
+            await PrescriptionRepository.AddAsync(prescription);
+            await PrescriptionRepository.SaveAsync();
+            return _mapper.Map<PrescriptionDto>(prescription);
         }
 
-        public async Task<Prescription?> GetByIdAsync(int id)
+        public async Task<bool> UpdatePrescriptionAsync(int id, UpdatePrescriptionDto updateDto)
         {
-            return await _prescriptionRepository.GetAsync(id);
+            var existing = await PrescriptionRepository.GetAsync(id);
+            if (existing == null)
+                return false;
+
+            _mapper.Map(updateDto, existing);
+            PrescriptionRepository.Update(existing);
+            await PrescriptionRepository.SaveAsync();
+            return true;
         }
 
-        public async Task UpdateAsync(Prescription prescription)
+        public async Task<bool> DeletePrescriptionAsync(int id)
         {
-            _prescriptionRepository.Update(prescription);
-            await _prescriptionRepository.SaveAsync();
+            var prescription = await PrescriptionRepository.GetAsync(id);
+            if (prescription == null)
+                return false;
+
+            PrescriptionRepository.Delete(prescription);
+            await PrescriptionRepository.SaveAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<PrescriptionDto>> GetByCheckupIdAsync(int checkupId)
+        {
+            var prescriptions = await PrescriptionRepository.GetAll()
+                .Where(c => c.CheckupId == checkupId)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<PrescriptionDto>>(prescriptions);
         }
     }
 }

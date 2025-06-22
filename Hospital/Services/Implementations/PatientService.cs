@@ -1,4 +1,6 @@
-﻿using Hospital.Models;
+﻿using AutoMapper;
+using Hospital.DTOs;
+using Hospital.Models;
 using Hospital.Repositories;
 using Hospital.Services.Interfaces;
 
@@ -6,43 +8,61 @@ namespace Hospital.Services.Implementations
 {
     public class PatientService : IPatientService
     {
-        private readonly IRepository<Patient> _patientRepository;
+        private readonly RepositoryFactory _factory;
+        private IRepository<Patient>? _patientRepository;
+        private readonly IMapper _mapper;
 
-        public PatientService(RepositoryFactory factory)
+        public PatientService(RepositoryFactory factory, IMapper mapper)
         {
-            _patientRepository = factory.CreateRepository<Patient>();
+            _factory = factory;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Patient>> GetAllAsync()
+        private IRepository<Patient> PatientRepository =>
+            _patientRepository ??= _factory.CreateRepository<Patient>();
+
+        public async Task<IEnumerable<PatientDto>> GetAllAsync()
         {
-            return await _patientRepository.GetAllAsync();
+            var patients = await PatientRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<PatientDto>>(patients);
         }
 
-        public async Task<Patient?> GetByIdAsync(int id)
+        public async Task<PatientDto?> GetByIdAsync(int id)
         {
-            return await _patientRepository.GetAsync(id);
+            var patient = await PatientRepository.GetAsync(id);
+            return patient == null ? null : _mapper.Map<PatientDto>(patient);
         }
 
-        public async Task AddAsync(Patient patient)
+        public async Task<PatientDto> CreatePatientAsync(CreatePatientDto createDto)
         {
-            await _patientRepository.AddAsync(patient);
-            await _patientRepository.SaveAsync();
+            var patient = _mapper.Map<Patient>(createDto);
+            await PatientRepository.AddAsync(patient);
+            await PatientRepository.SaveAsync();
+            return _mapper.Map<PatientDto>(patient);
         }
 
-        public async Task UpdateAsync(Patient patient)
+        public async Task<bool> UpdatePatientAsync(int id, UpdatePatientDto updateDto)
         {
-            _patientRepository.Update(patient);
-            await _patientRepository.SaveAsync();
+            var existingPatient = await PatientRepository.GetAsync(id);
+            if (existingPatient == null)
+                return false;
+
+            _mapper.Map(updateDto, existingPatient);
+
+            PatientRepository.Update(existingPatient);
+            await PatientRepository.SaveAsync();
+            return true;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeletePatientAsync(int id)
         {
-            var patient = await _patientRepository.GetAsync(id);
-            if (patient != null)
-            {
-                _patientRepository.Delete(patient);
-                await _patientRepository.SaveAsync();
-            }
+            var patient = await PatientRepository.GetAsync(id);
+            if (patient == null)
+                return false;
+
+            PatientRepository.Delete(patient);
+            await PatientRepository.SaveAsync();
+            return true;
         }
     }
 }

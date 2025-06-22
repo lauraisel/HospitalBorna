@@ -2,16 +2,16 @@
 {
     public class RepositoryFactory
     {
-        private readonly AppDbContext _context;
+        private readonly Lazy<AppDbContext> _lazyContext;
 
-        public RepositoryFactory(AppDbContext context)
+        public RepositoryFactory(Lazy<AppDbContext> lazyContext)
         {
-            _context = context;
+            _lazyContext = lazyContext;
         }
 
         public IRepository<T> CreateRepository<T>() where T : class
         {
-            return new Repository<T>(_context);
+            return new Repository<T>(_lazyContext.Value);
         }
     }
 

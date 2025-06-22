@@ -1,4 +1,6 @@
-﻿namespace Hospital.Repositories
+﻿using System.Linq.Expressions;
+
+namespace Hospital.Repositories
 {
     public interface IRepository<T> where T : class
     {

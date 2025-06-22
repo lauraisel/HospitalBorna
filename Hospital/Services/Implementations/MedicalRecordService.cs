@@ -1,4 +1,5 @@
-﻿using CsvHelper;
+﻿using AutoMapper;
+using CsvHelper;
 using Hospital.DTOs;
 using Hospital.Models;
 using Hospital.Repositories;
@@ -12,42 +13,74 @@ namespace Hospital.Services.Implementations
 {
     public class MedicalRecordService : IMedicalRecordService
     {
-        private readonly IRepository<MedicalRecord> _medicalRecordRepository;
+        private readonly RepositoryFactory _factory;
+        private IRepository<MedicalRecord>? _medicalRecordRepository;
+        private readonly IMapper _mapper;
 
-        public MedicalRecordService(RepositoryFactory factory)
+        private IRepository<MedicalRecord> MedicalRecordRepository =>
+        _medicalRecordRepository ??= _factory.CreateRepository<MedicalRecord>();
+
+        public MedicalRecordService(RepositoryFactory factory, IMapper mapper)
         {
-            _medicalRecordRepository = factory.CreateRepository<MedicalRecord>();
+            _factory = factory;
+            _mapper = mapper;
         }
 
-        public async Task AddAsync(MedicalRecord record)
+        public async Task<IEnumerable<MedicalRecordDto>> GetAllAsync()
         {
-            await _medicalRecordRepository.AddAsync(record);
+            var records = await MedicalRecordRepository.GetAll().ToListAsync();
+            return _mapper.Map<IEnumerable<MedicalRecordDto>>(records);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<MedicalRecordDto?> GetByIdAsync(int id)
         {
-            var record = await _medicalRecordRepository.GetAsync(id);
-            if (record != null)
-            {
-                _medicalRecordRepository.Delete(record);
-                await _medicalRecordRepository.SaveAsync();
-            }
+            var record = await MedicalRecordRepository.GetAsync(id);
+            return record == null ? null : _mapper.Map<MedicalRecordDto>(record);
         }
 
-        public async Task<MedicalRecord?> GetByIdAsync(int id)
+        public async Task<MedicalRecordDto> CreateMedicalRecordAsync(CreateMedicalRecordDto createDto)
         {
-            return await _medicalRecordRepository.GetAsync(id);
+            var record = _mapper.Map<MedicalRecord>(createDto);
+            await MedicalRecordRepository.AddAsync(record);
+            await MedicalRecordRepository.SaveAsync();
+            return _mapper.Map<MedicalRecordDto>(record);
         }
 
-        public async Task<IEnumerable<MedicalRecord>> GetByPatientIdAsync(int patientId)
+        public async Task<bool> UpdateMedicalRecordAsync(int id, UpdateMedicalRecordDto updateDto)
         {
-            var records = await _medicalRecordRepository.GetAllAsync();
-            return records.Where(p => p.PatientId == patientId);
+            var existing = await MedicalRecordRepository.GetAsync(id);
+            if (existing == null)
+                return false;
+
+            _mapper.Map(updateDto, existing);
+            MedicalRecordRepository.Update(existing);
+            await MedicalRecordRepository.SaveAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteMedicalRecordAsync(int id)
+        {
+            var record = await MedicalRecordRepository.GetAsync(id);
+            if (record == null)
+                return false;
+
+            MedicalRecordRepository.Delete(record);
+            await MedicalRecordRepository.SaveAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<MedicalRecordDto>> GetByPatientIdAsync(int patientId)
+        {
+            var records = await MedicalRecordRepository.GetAll()
+                .Where(r => r.PatientId == patientId)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<MedicalRecordDto>>(records);
         }
 
         public async Task<FileStreamResult> GetMedicalRecordsCsvAsync(int patientId)
         {
-            var records = await _medicalRecordRepository.GetAll()
+            var records = await MedicalRecordRepository.GetAll()
                 .Where(r => r.PatientId == patientId)
                 .Include(r => r.Patient)
                 .Select(r => new MedicalRecordExportRow
@@ -76,12 +109,6 @@ namespace Hospital.Services.Implementations
             {
                 FileDownloadName = fileName
             };
-        }
-
-        public async Task UpdateAsync(MedicalRecord record)
-        {
-            _medicalRecordRepository.Update(record);
-            await _medicalRecordRepository.SaveAsync();
         }
     }
 }

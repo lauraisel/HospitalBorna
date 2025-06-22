@@ -7,7 +7,6 @@ namespace Hospital.DTOs
         public int Id { get; set; }
         public DateTime CheckupTime { get; set; }
         public CheckupProcedure Procedure { get; set; }
-        public string? ImagePath { get; set; }
         public int PatientId { get; set; }
     }
 
@@ -15,7 +14,12 @@ namespace Hospital.DTOs
     {
         public DateTime CheckupTime { get; set; }
         public CheckupProcedure Procedure { get; set; }
-        public string? ImagePath { get; set; }
         public int PatientId { get; set; }
+    }
+
+    public class UpdateCheckupDto
+    {
+        public DateTime CheckupTime { get; set; }
+        public CheckupProcedure Procedure { get; set; }
     }
 }

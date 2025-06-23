@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { Patient } from '../types/patient';
 import { getSexLabel } from '../utils/sexUtils';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   refresh: boolean;
@@ -23,6 +24,7 @@ interface Props {
 
 const PatientList: React.FC<Props> = ({ refresh, onAddPatient }) => {
   const [patients, setPatients] = useState<Patient[]>([]);
+  const navigate = useNavigate();
 
   const fetchPatients = async () => {
     try {
@@ -40,20 +42,28 @@ const PatientList: React.FC<Props> = ({ refresh, onAddPatient }) => {
   const headerBg = useColorModeValue('gray.100', 'gray.700');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
+  const handleDetailsClick = (id: number) => {
+    navigate(`/patients/${id}`);
+  };
+
   return (
     <Box maxW="700px" mx="auto" mt="8" fontFamily="Arial, sans-serif">
-      <Heading as="h2" size="lg" textAlign="center" mb="6" color={useColorModeValue('gray.800', 'white')}>
-        Patient List
-      </Heading>
+      {/* Flex container for heading and button */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb="6">
+        <Heading
+          as="h2"
+          size="lg"
+          textAlign="center"
+          flex="1"
+          color={useColorModeValue('gray.800', 'white')}
+        >
+          Patient List
+        </Heading>
 
-      <Button
-        colorScheme="blue"
-        mb="4"
-        float="right"
-        onClick={onAddPatient}
-      >
-        Add Patient
-      </Button>
+        <Button colorScheme="blue" onClick={onAddPatient} ml="auto">
+          Add Patient
+        </Button>
+      </Box>
 
       <TableContainer boxShadow="sm" borderRadius="md" borderWidth="1px" borderColor={borderColor}>
         <Table variant="simple" size="md">
@@ -64,6 +74,7 @@ const PatientList: React.FC<Props> = ({ refresh, onAddPatient }) => {
               <Th>Personal ID</Th>
               <Th>Sex</Th>
               <Th>Date of Birth</Th>
+              <Th>Details</Th> {/* New column */}
             </Tr>
           </Thead>
           <Tbody>
@@ -74,6 +85,15 @@ const PatientList: React.FC<Props> = ({ refresh, onAddPatient }) => {
                 <Td>{p.personalId}</Td>
                 <Td>{getSexLabel(p.sex)}</Td>
                 <Td>{new Date(p.dateOfBirth).toLocaleDateString()}</Td>
+                <Td>
+                  <Button
+                    size="sm"
+                    colorScheme="teal"
+                    onClick={() => handleDetailsClick(p.id)}
+                  >
+                    Details
+                  </Button>
+                </Td>
               </Tr>
             ))}
           </Tbody>

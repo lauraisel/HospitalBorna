@@ -5,6 +5,6 @@ export interface Patient {
   personalId: string;
   name: string;
   surname: string;
-  dateOfBirth: string; // ISO date string
+  dateOfBirth: string; 
   sex: Sex;
 }

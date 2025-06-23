@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Patient } from '../types/patient';
 import { MedicalRecord } from '../types/MedicalRecord';
+import { Checkup } from '../types/Checkup';
 
 const API_BASE = 'http://localhost:8080/api';
 
@@ -26,5 +27,10 @@ export const fetchMedicalRecord = async (patientId: number): Promise<MedicalReco
 
   export const createMedicalRecord = async (record: Omit<MedicalRecord, 'id'>): Promise<MedicalRecord> => {
     const response = await axios.post<MedicalRecord>(`${API_BASE}/MedicalRecord`, record);
+    return response.data;
+  };
+
+  export const fetchCheckupRecord = async (patientId: number): Promise<Checkup[]> => {
+    const response = await axios.get<Checkup[]>(`${API_BASE}/Checkup/patient/${patientId}`);
     return response.data;
   };

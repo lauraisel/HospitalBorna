@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -33,6 +33,17 @@ const [surname, setSurname] = useState('');
 
   const [loading, setLoading] = useState(false);
   const toast = useToast();
+
+   useEffect(() => {
+      if (isOpen) {
+        setName('');
+        setBirthDate('');
+        setSex('');
+        setPersonalId('');
+        setSurname('')
+      }
+    }, [isOpen]);
+  
 
   const handleSubmit = async () => {
     if (!name || !dateOfBirth || sex === '') {

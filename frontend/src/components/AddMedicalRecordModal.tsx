@@ -42,7 +42,7 @@ const AddMedicalRecordModal: React.FC<AddMedicalRecordModalProps> = ({
       setEndDate(null);
     }
   }, [isOpen]);
-  // When creating, the id will not be set
+
   type NewMedicalRecord = Omit<MedicalRecord, 'id'>;
 
   const handleSubmit = async () => {

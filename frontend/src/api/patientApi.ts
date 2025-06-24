@@ -88,3 +88,18 @@ export const fetchMedicalRecord = async (patientId: number): Promise<MedicalReco
     const response = await axios.get<CheckupImage[]>(`${API_BASE}/CheckupImage/checkup/${checkupId}`);
     return response.data;
   };
+
+  export async function uploadCheckupImage(checkupId: number, file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('File', file);
+    formData.append('CheckupId', checkupId.toString());
+  
+    const response = await fetch('/api/CheckupImage', {
+      method: 'POST',
+      body: formData,
+    });
+  
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
+  }

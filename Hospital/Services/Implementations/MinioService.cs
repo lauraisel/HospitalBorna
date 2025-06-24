@@ -1,9 +1,6 @@
 ﻿using Hospital.Services.Interfaces;
-using Minio.DataModel.Args;
 using Minio;
-using Minio.ApiEndpoints;
-using Minio.DataModel;
-using System.Security.AccessControl;
+using Minio.DataModel.Args;
 
 namespace Hospital.Services.Implementations
 {
@@ -18,11 +15,15 @@ namespace Hospital.Services.Implementations
 
         public async Task<string> UploadFileAsync(Stream stream, string fileName, string contentType, string bucketName)
         {
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+
             await _minioClient.PutObjectAsync(new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(fileName)
-                .WithStreamData(stream)
-                .WithObjectSize(stream.Length)
+                .WithStreamData(ms)
+                .WithObjectSize(ms.Length)
                 .WithContentType(contentType));
 
             return $"{bucketName}/{fileName}";
@@ -59,20 +60,6 @@ namespace Hospital.Services.Implementations
             return fileNames;
         }
 
-        public async Task<string> GeneratePresignedUrlAsync(string fileName, string bucketName, int expirySeconds = 3600)
-        {
-            var url = await _minioClient.PresignedGetObjectAsync(
-                new PresignedGetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(fileName)
-                    .WithExpiry(expirySeconds)
-            );
-
-           // url = url.Replace("http://minio:9000", "http://localhost:9000");
-
-            return url;
-        }
-
         public async Task<bool> BucketExistsAsync(BucketExistsArgs args)
         {
             return await _minioClient.BucketExistsAsync(args);
@@ -92,7 +79,5 @@ namespace Hospital.Services.Implementations
 
             return bucketList.Buckets.Select(b => b.Name).ToList();
         }
-
-
     }
 }

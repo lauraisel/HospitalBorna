@@ -22,7 +22,7 @@ import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { Patient } from '../types/patient';
 import { MedicalRecord } from '../types/MedicalRecord';
 import { getSexLabel } from '../utils/sexUtils';
-import { fetchPatientById, fetchMedicalRecord, fetchCheckupRecord } from '../api/patientApi';
+import { fetchPatientById, fetchMedicalRecord, fetchCheckupRecord,  downloadMedicalRecordCsv } from '../api/patientApi';
 import AddMedicalRecordModal from '../components/AddMedicalRecordModal';
 import AddCheckupModal from '../components/AddCheckupModal';
 import { Checkup } from '../types/Checkup';
@@ -41,6 +41,16 @@ const PatientDetails: React.FC = () => {
   const [loadingCheckupRecords, setLoadingCheckupRecords] = useState(false);
   const [recordsCheckupOpen, setRecordsCheckupOpen] = useState(false);
   const [isCheckupModalOpen, setCheckupIsModalOpen] = useState(false);
+
+  const handleCheckupDetailsClick = (id: number) => {
+    navigate(`/checkups/${id}`);
+  };
+
+  
+
+  const handleMedicalRecordDetailsClick = (recordId: number) => {
+    navigate(`/medical-records/${recordId}`);
+  };
 
   const toast = useToast();
   const navigate = useNavigate();
@@ -181,6 +191,10 @@ const PatientDetails: React.FC = () => {
         <strong>Date of Birth:</strong> {new Date(patient.dateOfBirth).toLocaleDateString()}
       </Text>
 
+        <Button size="sm" colorScheme="blue" onClick={() => downloadMedicalRecordCsv(patient.id)}>
+          Download Medical Records (CSV)
+        </Button>
+
       <Box mt="6" display="flex" gap="4" flexWrap="wrap">
         <Button
           size="sm"
@@ -199,6 +213,8 @@ const PatientDetails: React.FC = () => {
         <Button size="sm" colorScheme="blue" onClick={() => setIsModalOpen(true)}>
           Add Medical Record
         </Button>
+        
+
       </Box>
 
       <Collapse in={recordsOpen} animateOpacity>
@@ -218,6 +234,7 @@ const PatientDetails: React.FC = () => {
                   <Th>Disease Name</Th>
                   <Th>Start Date</Th>
                   <Th>End Date</Th>
+                  <Th>Details</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -226,6 +243,11 @@ const PatientDetails: React.FC = () => {
                     <Td>{record.diseaseName}</Td>
                     <Td>{new Date(record.startDate).toLocaleDateString()}</Td>
                     <Td>{record.endDate ? new Date(record.endDate).toLocaleDateString() : 'Ongoing'}</Td>
+                    <Td>
+                      <Button size="sm" colorScheme="blue" onClick={() => handleMedicalRecordDetailsClick(record.id)}>
+                        Details
+                      </Button>
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>
@@ -270,6 +292,7 @@ const PatientDetails: React.FC = () => {
                 <Tr>
                   <Th>Checkup Date</Th>
                   <Th>Checkup Procedure</Th>
+                  <Th>Details</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -277,6 +300,11 @@ const PatientDetails: React.FC = () => {
                   <Tr key={checkup.id} borderBottom="1px" borderColor={borderColor}>
                     <Td>{new Date(checkup.checkupTime).toLocaleDateString()}</Td>
                     <Td>{getCheckupProcedureLabel(checkup.procedure)}</Td>
+                    <Td>
+                    <Button size="sm" colorScheme="blue" onClick={() => handleCheckupDetailsClick(checkup.id)}>
+                        Details
+                      </Button>
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

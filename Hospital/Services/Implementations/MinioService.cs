@@ -67,8 +67,32 @@ namespace Hospital.Services.Implementations
                     .WithObject(fileName)
                     .WithExpiry(expirySeconds)
             );
+
+           // url = url.Replace("http://minio:9000", "http://localhost:9000");
+
             return url;
         }
+
+        public async Task<bool> BucketExistsAsync(BucketExistsArgs args)
+        {
+            return await _minioClient.BucketExistsAsync(args);
+        }
+
+        public async Task MakeBucketAsync(MakeBucketArgs args)
+        {
+            await _minioClient.MakeBucketAsync(args);
+        }
+
+        public async Task<List<string>> ListBucketsAsync()
+        {
+            var bucketList = await _minioClient.ListBucketsAsync();
+
+            if (bucketList?.Buckets == null)
+                return new List<string>();
+
+            return bucketList.Buckets.Select(b => b.Name).ToList();
+        }
+
 
     }
 }

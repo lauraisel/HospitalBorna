@@ -4,6 +4,7 @@ using Hospital.Models;
 using Hospital.Repositories;
 using Hospital.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Minio.DataModel.Args;
 
 namespace Hospital.Services.Implementations
 {
@@ -32,6 +33,13 @@ namespace Hospital.Services.Implementations
 
         public async Task<CheckupImageDto> UploadImageAsync(CreateCheckupImageDto dto)
         {
+
+            bool found = await _minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucketName));
+            if (!found)
+            {
+                await _minio.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucketName));
+            }
+
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.File.FileName);
             await using var stream = dto.File.OpenReadStream();
 
@@ -45,6 +53,13 @@ namespace Hospital.Services.Implementations
 
             var resultDto = _mapper.Map<CheckupImageDto>(checkupImage);
             resultDto.ImageUrl = await _minio.GeneratePresignedUrlAsync(fileName, _bucketName);
+
+            var buckets = await _minio.ListBucketsAsync(); 
+            foreach (var b in buckets)
+            {
+                Console.WriteLine($"Bucket: {b}");
+            }
+
 
             return resultDto;
         }

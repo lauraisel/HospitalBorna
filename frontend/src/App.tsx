@@ -1,26 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { ChakraProvider } from '@chakra-ui/react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import PatientsPage from './pages/PatientsPage';
+import PatientDetailsPage from './pages/PatientDetails';
+import MedicalRecordDetailsPage from './pages/MedicalRecordDetailsPage';
+import CheckupDetailsPage from './pages/CheckupDetailsPage';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App: React.FC = () => (
+  <ChakraProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<PatientsPage />} />
+        <Route path="/patients/:id" element={<PatientDetailsPage />} />
+        <Route path="/checkups/:id" element={<CheckupDetailsPage />} />
+        <Route path="/medical-records/:id" element={<MedicalRecordDetailsPage />} />
+      </Routes>
+    </BrowserRouter>
+  </ChakraProvider>
+);
 
 export default App;

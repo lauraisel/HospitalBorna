@@ -1,9 +1,6 @@
 ﻿using Hospital.Services.Interfaces;
-using Minio.DataModel.Args;
 using Minio;
-using Minio.ApiEndpoints;
-using Minio.DataModel;
-using System.Security.AccessControl;
+using Minio.DataModel.Args;
 
 namespace Hospital.Services.Implementations
 {
@@ -18,11 +15,15 @@ namespace Hospital.Services.Implementations
 
         public async Task<string> UploadFileAsync(Stream stream, string fileName, string contentType, string bucketName)
         {
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+
             await _minioClient.PutObjectAsync(new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(fileName)
-                .WithStreamData(stream)
-                .WithObjectSize(stream.Length)
+                .WithStreamData(ms)
+                .WithObjectSize(ms.Length)
                 .WithContentType(contentType));
 
             return $"{bucketName}/{fileName}";
@@ -59,16 +60,24 @@ namespace Hospital.Services.Implementations
             return fileNames;
         }
 
-        public async Task<string> GeneratePresignedUrlAsync(string fileName, string bucketName, int expirySeconds = 3600)
+        public async Task<bool> BucketExistsAsync(BucketExistsArgs args)
         {
-            var url = await _minioClient.PresignedGetObjectAsync(
-                new PresignedGetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(fileName)
-                    .WithExpiry(expirySeconds)
-            );
-            return url;
+            return await _minioClient.BucketExistsAsync(args);
         }
 
+        public async Task MakeBucketAsync(MakeBucketArgs args)
+        {
+            await _minioClient.MakeBucketAsync(args);
+        }
+
+        public async Task<List<string>> ListBucketsAsync()
+        {
+            var bucketList = await _minioClient.ListBucketsAsync();
+
+            if (bucketList?.Buckets == null)
+                return new List<string>();
+
+            return bucketList.Buckets.Select(b => b.Name).ToList();
+        }
     }
 }
